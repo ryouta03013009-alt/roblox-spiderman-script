@@ -1,51 +1,45 @@
--- Mobile-Optimized Spider-Man Script
+-- Automatically transforms character into Spider-Man
 
-local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local camera = game.Workspace.CurrentCamera
-
-local webReleased = false
-
--- Function to shoot web
-local function shootWeb()
-    if webReleased then return end
-    webReleased = true
-    local web = Instance.new("Part")
-    web.Size = Vector3.new(0.2, 0.2, 10)
-    web.Anchored = true
-    web.CFrame = character.Head.CFrame * CFrame.new(0, 0, -5)
-    web.Parent = game.Workspace
-    wait(2)
-    web:Destroy()
-    webReleased = false
-end
-
--- Function to tilt camera
-local function tiltCamera(direction)
-    local tiltAmount = 5 -- Adjust this value for sensitivity
-    if direction == "up" then
-        camera.CFrame = camera.CFrame * CFrame.Angles(math.rad(-tiltAmount), 0, 0)
-    elseif direction == "down" then
-        camera.CFrame = camera.CFrame * CFrame.Angles(math.rad(tiltAmount), 0, 0)
+local function onCharacterAdded(character)
+    
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    -- Set character color to red
+    local bodyColors = humanoid:FindFirstChildOfClass("BodyColors") or Instance.new("BodyColors", character)
+    bodyColors.HeadColor = BrickColor.new("Bright red")
+    bodyColors.LeftArmColor = BrickColor.new("Bright red")
+    bodyColors.RightArmColor = BrickColor.new("Bright red")
+    bodyColors.LeftLegColor = BrickColor.new("Bright red")
+    bodyColors.RightLegColor = BrickColor.new("Bright red")
+    bodyColors.TorsoColor = BrickColor.new("Bright red")
+    
+    -- Create a mask
+    local mask = Instance.new("Part")
+    mask.Size = Vector3.new(1, 1, 1)
+    mask.Color = Color3.new(0, 0, 0)
+    mask.Position = character.Head.Position
+    mask.Parent = character
+    
+    -- Web shooting mechanics
+    local function shootWeb()
+        -- Implement web shooting functionality here
+        print("Web shot!")
+        -- More web shooting logic...
     end
-end
-
--- Function to handle input
-local function onUserInput(input, gameProcessed)
-    if gameProcessed then return end
-    if input.UserInputType == Enum.UserInputType.Touch then
-        if input.UserInputState == Enum.UserInputState.Begin then
-            shootWeb()
-        end
-    elseif input.UserInputType == Enum.UserInputType.Accelerometer then
-        if input.Position.Y > input.Position.X then -- Tilting up
-tiltCamera("up")
-        else -- Tilting down
-tiltCamera("down")
+    
+    -- Connect shooting to key press
+    local function onInputBegan(input, gameProcessedEvent)
+        if not gameProcessedEvent and input.UserInputType == Enum.UserInputType.Keyboard then
+            if input.KeyCode == Enum.KeyCode.Space then
+                shootWeb()
+            end
         end
     end
+    
+    game:GetService("UserInputService").InputBegan:Connect(onInputBegan)
 end
 
-UserInputService.InputBegan:Connect(onUserInput)
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(onCharacterAdded)
+end)
